@@ -1,0 +1,31 @@
+[package]
+name = "wasm-dap-cli"
+description = "Command-line WebAssembly debugger, tracer and module inspector built on Wasmtime and the Debug Adapter Protocol"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "../../README.md"
+keywords = ["webassembly", "wasm", "debugger", "dap", "tracing"]
+categories = ["development-tools::debugging", "command-line-utilities", "wasm"]
+
+[[bin]]
+name = "wasm-dap"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+getrandom = "0.2"
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+wasm-dap-core = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+wasm-dap-protocol = { workspace = true }
+wasm-dap-testkit = { workspace = true }

@@ -1,0 +1,13 @@
+[package]
+name = "wasm-dap-testkit"
+description = "Test fixtures and a DAP client harness for wasm-dap's own test suites"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+serde_json = { workspace = true }
+wasm-dap-protocol = { workspace = true }
+wat = { workspace = true }

@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build word-count",
+      "type": "shell",
+      "command": "cargo",
+      "args": ["build", "--target", "wasm32-wasip1"],
+      "problemMatcher": ["$rustc"],
+      "group": "build"
+    }
+  ]
+}

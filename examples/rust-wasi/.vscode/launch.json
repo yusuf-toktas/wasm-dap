@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "wasm-dap",
+      "request": "launch",
+      "name": "Debug word-count",
+      "program": "${workspaceFolder}/target/wasm32-wasip1/debug/word-count.wasm",
+      "args": ["the", "cat", "sat", "on", "the", "magnificent", "mat"],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "build word-count"
+    }
+  ]
+}

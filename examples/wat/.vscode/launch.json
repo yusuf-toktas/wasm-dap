@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "wasm-dap",
+      "request": "launch",
+      "name": "Debug collatz.wat: steps(27)",
+      "program": "${workspaceFolder}/collatz.wat",
+      "invoke": "steps",
+      "invokeArgs": [27]
+    },
+    {
+      "type": "wasm-dap",
+      "request": "launch",
+      "name": "Debug collatz.wat: longest(30)",
+      "program": "${workspaceFolder}/collatz.wat",
+      "invoke": "longest",
+      "invokeArgs": [30]
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            vscode: linux-x64
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-24.04-arm
+            vscode: linux-arm64
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            vscode: darwin-x64
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            vscode: darwin-arm64
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            vscode: win32-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+      - name: Build the adapter
+        run: cargo build --release --locked -p wasm-dap-cli --target ${{ matrix.target }}
+      - name: Package the binary
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          name="wasm-dap-${version}-${{ matrix.target }}"
+          mkdir -p "dist/${name}"
+          exe=wasm-dap
+          if [[ "${{ matrix.target }}" == *windows* ]]; then exe=wasm-dap.exe; fi
+          cp "target/${{ matrix.target }}/release/${exe}" "dist/${name}/"
+          cp README.md LICENSE-MIT LICENSE-APACHE CHANGELOG.md "dist/${name}/"
+          cd dist
+          if [[ "${{ matrix.target }}" == *windows* ]]; then
+            7z a "${name}.zip" "${name}" > /dev/null
+          else
+            tar czf "${name}.tar.gz" "${name}"
+          fi
+          rm -rf "${name}"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: editors/vscode/package-lock.json
+      - name: Package the VS Code extension
+        shell: bash
+        working-directory: editors/vscode
+        run: |
+          npm ci
+          mkdir -p bin
+          exe=wasm-dap
+          if [[ "${{ matrix.target }}" == *windows* ]]; then exe=wasm-dap.exe; fi
+          cp "../../target/${{ matrix.target }}/release/${exe}" bin/
+          npx vsce package --target ${{ matrix.vscode }} --out "../../dist/wasm-dap-${{ matrix.vscode }}.vsix"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.target }}
+          path: dist/*
+
+  release:
+    name: Publish GitHub release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dist-*
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: true
+          files: dist/*

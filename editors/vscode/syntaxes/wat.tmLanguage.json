@@ -1,0 +1,62 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "WebAssembly Text",
+  "scopeName": "source.wat",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#instructions" },
+    { "include": "#types" },
+    { "include": "#identifiers" },
+    { "include": "#numbers" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        { "name": "comment.line.double-semicolon.wat", "match": ";;.*$" },
+        { "name": "comment.block.wat", "begin": "\\(;", "end": ";\\)" }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.wat",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [ { "name": "constant.character.escape.wat", "match": "\\\\(?:[nrt\\\\'\"]|[0-9a-fA-F]{2}|u\\{[0-9a-fA-F]+\\})" } ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "storage.type.wat",
+          "match": "(?<=\\()(?:module|component|func|param|result|local|global|memory|table|type|import|export|data|elem|start|tag|rec|sub|struct|array|field)\\b"
+        },
+        { "name": "storage.modifier.wat", "match": "\\b(?:mut|shared|final|declare|offset|item)\\b" },
+        {
+          "name": "keyword.control.wat",
+          "match": "\\b(?:block|loop|if|then|else|end|br|br_if|br_table|br_on_null|br_on_non_null|br_on_cast|br_on_cast_fail|return|return_call|return_call_indirect|return_call_ref|call|call_indirect|call_ref|unreachable|nop|try|try_table|catch|catch_all|throw|throw_ref|select|drop)\\b"
+        }
+      ]
+    },
+    "instructions": {
+      "patterns": [
+        { "name": "keyword.operator.wat", "match": "\\b(?:i32|i64|f32|f64|v128|i8x16|i16x8|i32x4|i64x2|f32x4|f64x2|local|global|memory|table|ref|elem|data|struct|array|any|extern|i31)\\.[a-z0-9_.]+\\b" },
+        { "name": "keyword.other.attribute.wat", "match": "\\b(?:offset|align)=" }
+      ]
+    },
+    "types": {
+      "name": "support.type.wat",
+      "match": "\\b(?:i32|i64|f32|f64|v128|funcref|externref|anyref|eqref|i31ref|structref|arrayref|exnref|nullref|nullfuncref|nullexternref|func|extern|ref|null)\\b"
+    },
+    "identifiers": {
+      "name": "variable.other.wat",
+      "match": "\\$[0-9A-Za-z!#$%&'*+\\-./:<=>?@\\\\^_`|~]+"
+    },
+    "numbers": {
+      "patterns": [
+        { "name": "constant.numeric.hex.wat", "match": "(?<![\\w$])[+-]?0x[0-9a-fA-F_]+(?:\\.[0-9a-fA-F_]*)?(?:[pP][+-]?\\d+)?\\b" },
+        { "name": "constant.numeric.float.wat", "match": "(?<![\\w$])[+-]?(?:inf|nan(?::0x[0-9a-fA-F_]+)?)\\b" },
+        { "name": "constant.numeric.wat", "match": "(?<![\\w$])[+-]?\\d[\\d_]*(?:\\.[\\d_]*)?(?:[eE][+-]?\\d+)?\\b" }
+      ]
+    }
+  }
+}

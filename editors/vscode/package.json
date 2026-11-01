@@ -1,0 +1,282 @@
+{
+  "name": "wasm-dap",
+  "displayName": "wasm-dap: WebAssembly Debugger",
+  "description": "Debug WebAssembly with source-level breakpoints, stepping, variables, memory and disassembly views, powered by Wasmtime.",
+  "version": "0.1.0",
+  "publisher": "yusuf-toktas",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yusuf-toktas/wasm-dap"
+  },
+  "bugs": {
+    "url": "https://github.com/yusuf-toktas/wasm-dap/issues"
+  },
+  "homepage": "https://github.com/yusuf-toktas/wasm-dap#readme",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Debuggers",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "webassembly",
+    "wasm",
+    "wasi",
+    "wat",
+    "debugger",
+    "dwarf",
+    "wasmtime"
+  ],
+  "activationEvents": [
+    "onDebugResolve:wasm-dap",
+    "onDebugDynamicConfigurations:wasm-dap"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "In untrusted workspaces the adapter is never taken from the workspace: wasm-dap.adapterPath is read from user settings only and binaries inside the workspace are ignored.",
+      "restrictedConfigurations": [
+        "wasm-dap.adapterPath"
+      ]
+    },
+    "virtualWorkspaces": {
+      "supported": false,
+      "description": "The debugger runs WebAssembly files from the local file system."
+    }
+  },
+  "main": "./extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "wat",
+        "aliases": [
+          "WebAssembly Text",
+          "wat"
+        ],
+        "extensions": [
+          ".wat",
+          ".wast"
+        ],
+        "mimetypes": [
+          "text/x-wat"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "wat",
+        "scopeName": "source.wat",
+        "path": "./syntaxes/wat.tmLanguage.json"
+      }
+    ],
+    "breakpoints": [
+      { "language": "rust" },
+      { "language": "c" },
+      { "language": "cpp" },
+      { "language": "zig" },
+      { "language": "go" },
+      { "language": "wat" }
+    ],
+    "commands": [
+      {
+        "command": "wasm-dap.debugFile",
+        "title": "Debug WebAssembly File",
+        "category": "wasm-dap"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "wasm-dap.debugFile",
+          "when": "resourceExtname == .wasm || resourceExtname == .wat",
+          "group": "navigation@90"
+        }
+      ],
+      "editor/title/run": [
+        {
+          "command": "wasm-dap.debugFile",
+          "when": "resourceExtname == .wat",
+          "group": "navigation@90"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "wasm-dap",
+      "properties": {
+        "wasm-dap.adapterPath": {
+          "type": "string",
+          "default": "",
+          "scope": "machine-overridable",
+          "markdownDescription": "Path to the `wasm-dap` executable. When empty, the binary bundled with the extension is used, then `wasm-dap` on `PATH`, then `target/release` or `target/debug` of an open wasm-dap checkout."
+        },
+        "wasm-dap.logLevel": {
+          "type": "string",
+          "enum": [
+            "error",
+            "warn",
+            "info",
+            "debug",
+            "trace"
+          ],
+          "default": "warn",
+          "description": "Verbosity of the adapter's diagnostic log (written to its stderr)."
+        }
+      }
+    },
+    "debuggers": [
+      {
+        "type": "wasm-dap",
+        "label": "WebAssembly (wasm-dap)",
+        "languages": [
+          "rust",
+          "c",
+          "cpp",
+          "zig",
+          "wat"
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "required": [
+              "program"
+            ],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "Path to the WebAssembly module to debug (.wasm binary or .wat text).",
+                "default": "${workspaceFolder}/target/wasm32-wasip1/debug/app.wasm"
+              },
+              "args": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Command-line arguments passed to a WASI program (after argv[0]).",
+                "default": []
+              },
+              "env": {
+                "type": "object",
+                "additionalProperties": { "type": "string" },
+                "description": "Environment variables visible to the program.",
+                "default": {}
+              },
+              "inheritEnv": {
+                "type": "boolean",
+                "description": "Expose the adapter's own environment variables to the program.",
+                "default": false
+              },
+              "cwd": {
+                "type": "string",
+                "description": "Directory that relative paths in this configuration are resolved against.",
+                "default": "${workspaceFolder}"
+              },
+              "dirs": {
+                "type": "array",
+                "items": { "type": "string" },
+                "markdownDescription": "Host directories made available to a WASI program, as `HOST` or `HOST::GUEST` (same syntax as `wasmtime --dir`).",
+                "default": [
+                  "."
+                ]
+              },
+              "stdin": {
+                "type": "string",
+                "description": "File whose contents are provided as the program's standard input. Standard input is empty otherwise."
+              },
+              "invoke": {
+                "type": "string",
+                "markdownDescription": "Exported function to call instead of the WASI entry point `_start`. Use this for libraries and modules without `_start`."
+              },
+              "invokeArgs": {
+                "type": "array",
+                "items": { "type": [ "number", "string", "boolean" ] },
+                "markdownDescription": "Arguments for `invoke`, converted to the function's parameter types. Strings accept decimal, hexadecimal (`0x`), `nan` and `inf`.",
+                "default": []
+              },
+              "stopOnEntry": {
+                "type": "boolean",
+                "description": "Pause before the first WebAssembly instruction executes.",
+                "default": false
+              },
+              "sourceMap": {
+                "type": "object",
+                "additionalProperties": { "type": "string" },
+                "markdownDescription": "Maps path prefixes recorded in the module's DWARF to local paths, for binaries built elsewhere or with `--remap-path-prefix`.",
+                "default": {}
+              },
+              "serverToken": {
+                "type": "string",
+                "markdownDescription": "Secret printed by `wasm-dap serve --port`; required when connecting to it with `debugServer`."
+              },
+              "run": {
+                "type": "object",
+                "deprecationMessage": "Use `invoke` and `invokeArgs` instead.",
+                "properties": {
+                  "function": { "type": "string" },
+                  "args": { "type": "array" }
+                }
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "wasm-dap",
+            "request": "launch",
+            "name": "Debug WebAssembly",
+            "program": "${workspaceFolder}/target/wasm32-wasip1/debug/${workspaceFolderBasename}.wasm",
+            "args": [],
+            "cwd": "${workspaceFolder}"
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "wasm-dap: Launch a WASI program",
+            "description": "Run a WebAssembly command (with _start) under the debugger",
+            "body": {
+              "type": "wasm-dap",
+              "request": "launch",
+              "name": "Debug WASI program",
+              "program": "^\"\\${workspaceFolder}/target/wasm32-wasip1/debug/${1:app}.wasm\"",
+              "args": [],
+              "dirs": [ "." ],
+              "cwd": "^\"\\${workspaceFolder}\""
+            }
+          },
+          {
+            "label": "wasm-dap: Invoke an exported function",
+            "description": "Call one exported function of a library module",
+            "body": {
+              "type": "wasm-dap",
+              "request": "launch",
+              "name": "Debug ${1:function}",
+              "program": "^\"\\${workspaceFolder}/${2:module.wasm}\"",
+              "invoke": "${1:function}",
+              "invokeArgs": []
+            }
+          },
+          {
+            "label": "wasm-dap: Debug a WAT file",
+            "description": "Debug WebAssembly text with breakpoints in the .wat file",
+            "body": {
+              "type": "wasm-dap",
+              "request": "launch",
+              "name": "Debug WAT",
+              "program": "^\"\\${file}\"",
+              "invoke": "${1:function}",
+              "invokeArgs": []
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "check": "node --check extension.js",
+    "test": "node ./test/runTest.js",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@vscode/test-electron": "^2.4.1",
+    "@vscode/vsce": "^3.2.1"
+  }
+}
