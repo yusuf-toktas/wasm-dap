@@ -122,4 +122,4 @@ package` creates a `.vsix`; copy a `wasm-dap` binary into `bin/` first to bundle
 
 ## License
 
-MIT OR Apache-2.0
+Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE).

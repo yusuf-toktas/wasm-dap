@@ -52,7 +52,7 @@ jobs:
           exe=wasm-dap
           if [[ "${{ matrix.target }}" == *windows* ]]; then exe=wasm-dap.exe; fi
           cp "target/${{ matrix.target }}/release/${exe}" "dist/${name}/"
-          cp README.md LICENSE-MIT LICENSE-APACHE CHANGELOG.md "dist/${name}/"
+          cp README.md LICENSE-APACHE CHANGELOG.md "dist/${name}/"
           cd dist
           if [[ "${{ matrix.target }}" == *windows* ]]; then
             7z a "${name}.zip" "${name}" > /dev/null
